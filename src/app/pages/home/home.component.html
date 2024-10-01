@@ -1,0 +1,155 @@
+<div class="flex flex-column align-items-center">
+  <h1 class="text-center">Mis Tareas</h1>
+
+  <div class="flex flex-column md:flex-row justify-content-center align-items-center gap-2 w-full px-2 max-w-30rem mx-auto">
+    <div class="p-inputgroup w-full">
+      <span class="p-inputgroup-addon p-2">
+        <i class="pi pi-search"></i>
+      </span>
+      <input pInputText placeholder="Ej: Hacer la tarea" class="p-2 w-full" />
+    </div>
+
+    <button
+      class="p-button-outlined p-2"
+      pButton
+      type="button"
+      icon="pi pi-filter"
+    ></button>
+  </div>
+
+  <div class="flex flex-column w-full p-2">
+    <!-- <app-task *ngFor="let task of tasks" [task]="task"></app-task> -->
+  </div>
+
+
+</div>
+
+
+
+<div>
+  <p-dialog
+    [(visible)]="isOpenTaskModal"
+    [modal]="true"
+    [resizable]="true"
+    header="Agregar Nueva Tarea"
+    [style]="{ width: '90vw', maxWidth: '400px', height: '80vh' }"
+    [closable]="true"
+  >
+    <div class="p-3">
+      <div class="mt-2">
+        <label class="">Nombre de la tarea:</label>
+        <input pInputText class="w-full p-2 mt-1" />
+      </div>
+
+      <div class="mt-5">
+        <label>Fecha límite:</label>
+        <p-calendar
+          [showIcon]="true"
+          [minDate]="currentDate"
+          dateFormat="dd/mm/yy"
+          class="w-14rem"
+        ></p-calendar>
+      </div>
+
+      <div class="mt-5">
+        <label>Asignar a:</label>
+        <div class="flex align-items-center">
+          <p-multiSelect
+            class="p-element p-inputwrapper ng-valid ng-touched ng-dirty"
+            [options]="persons"
+            optionLabel="name"
+            placeholder="Selecciona Una Persona"
+          ></p-multiSelect>
+          <button pButton icon="pi pi-plus" (click)="isOpenPersonModal = true" class="ml-2 p-2"></button>
+        </div>
+      </div>
+
+      <div class="flex justify-end mt-5">
+        <button pButton icon="pi pi-save" (click)="saveTask()" class="p-button-success p-2"></button>
+      </div>
+    </div>
+  </p-dialog>
+</div>
+
+<div>
+  <p-dialog
+    [(visible)]="isOpenPersonModal"
+    [modal]="true"
+    [resizable]="true"
+    header="Agregar una Persona"
+    [style]="{ width: '90vw', maxWidth: '600px', height: '55vh' }"
+    [closable]="true"
+  >
+    <div [formGroup]="personForm" class="p-3">
+      <div class="mt-2">
+        <label>Nombre:</label>
+        <input
+          formControlName="name"
+          pInputText
+          class="w-full p-2 mt-1"
+          placeholder="Ej: Iván" />
+        <div *ngIf="personForm.get('name')?.invalid && (personForm.get('name')?.dirty || personForm.get('name')?.touched)">
+          <small
+            class="text-red-500"
+            *ngIf="personForm.get('name')?.errors?.['required']">
+            El nombre es obligatorio</small>
+        </div>
+      </div>
+
+      <div class="mt-4">
+        <label>Edad:</label>
+        <input
+          formControlName="age"
+          type="number"
+          pInputText
+          class="w-full p-2 mt-1"
+          placeholder="Ej: 24" />
+        <div *ngIf="personForm.get('age')?.invalid && (personForm.get('age')?.dirty || personForm.get('age')?.touched)">
+          <small
+            class="text-red-500"
+            *ngIf="personForm.get('age')?.errors?.['required']">
+            La edad es obligatoria
+          </small>
+          <small
+            class="text-red-500"
+            *ngIf="personForm.get('age')?.errors?.['pattern']">
+            La edad debe ser un número
+          </small>
+        </div>
+      </div>
+
+      <div class="mt-4">
+        <label>Habilidades:</label>
+        <div class="">
+          <p-chips
+            formControlName="skills"
+            [placeholder]="'Ej: GitHub, JavaScript'"
+          />
+        </div>
+        <div *ngIf="personForm.get('skills')?.invalid && (personForm.get('skills')?.dirty || personForm.get('skills')?.touched)">
+          <small class="text-red-500" *ngIf="personForm.get('skills')?.errors?.['required']">Tiene que haber
+            almenos una habilidad</small>
+        </div>
+      </div>
+
+      <div class="flex justify-end mt-4">
+        <button
+          pButton
+          icon="pi pi-save"
+          (click)="savePerson()"
+          class="p-button-success p-2"
+          [disabled]="personForm.invalid">Guardar</button>
+      </div>
+    </div>
+  </p-dialog>
+
+
+</div>
+
+<button
+  pButton
+  icon="pi pi-plus"
+  class="p-button-rounded fixed right-0 bottom-0 m-2"
+  (click)="isOpenTaskModal = true"
+></button>
+
