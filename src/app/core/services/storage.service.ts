@@ -55,7 +55,7 @@ export class StorageService {
     }
     return []
   }
-  
+
   updateTask(oldTask?: Task, updatedTask?: Task) {
     if (!oldTask || !updatedTask) {
       console.error("Se requieren tanto oldTask como updatedTask para actualizar.");

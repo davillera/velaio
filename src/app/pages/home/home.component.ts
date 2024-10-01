@@ -10,7 +10,7 @@ import { SpeedDialModule } from 'primeng/speeddial';
 import {MessageService} from "primeng/api";
 import {MultiSelectModule} from "primeng/multiselect";
 import {ChipsModule} from "primeng/chips";
-import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
+import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from "@angular/forms";
 import {StorageService} from "../../core/services/storage.service";
 import {Person} from "../../core/models/person";
 import {Task} from "../../core/models/task";
@@ -18,6 +18,7 @@ import {CardModule} from "primeng/card";
 import {AvatarGroupModule} from "primeng/avatargroup";
 import {AvatarModule} from "primeng/avatar";
 import {ToastModule} from "primeng/toast";
+import {DropdownModule} from "primeng/dropdown";
 
 @Component({
   selector: 'app-home',
@@ -37,7 +38,9 @@ import {ToastModule} from "primeng/toast";
     CardModule,
     AvatarGroupModule,
     AvatarModule,
-    ToastModule
+    ToastModule,
+    FormsModule,
+    DropdownModule
   ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
@@ -58,12 +61,36 @@ export class HomeComponent implements OnInit {
   persons: Person[] = [];
   oldTask: any
   tasks: Task[] = []
+  searchTerm: string = '';
+  filteredTasks: Task[] = [];
+  selectedFilter: string = 'all';
+  filterOptions: any[] = [
+    { label: 'Todas', value: 'all' },
+    { label: 'Completadas', value: 'completed' },
+    { label: 'Pendientes', value: 'pending' }
+  ];
 
   ngOnInit(){
     this.getPersons()
     this.getTasks()
     this.initFormPerson()
     this.initFormTask()
+    this.filteredTasks = this.tasks;
+  }
+
+  filterTasks() {
+    const search = this.searchTerm.trim().toLowerCase();
+
+    this.filteredTasks = this.tasks.filter(task =>
+      task.name.toLowerCase().includes(search) ||
+      task.persons.some(person => person.name.toLowerCase().includes(search))
+    );
+    
+    if (this.selectedFilter === 'completed') {
+      this.filteredTasks = this.filteredTasks.filter(task => task.status === true);
+    } else if (this.selectedFilter === 'pending') {
+      this.filteredTasks = this.filteredTasks.filter(task => task.status === false);
+    }
   }
 
   getAvatarInitials(name: string): string {
@@ -91,6 +118,7 @@ export class HomeComponent implements OnInit {
 
   getTasks(){
     this.tasks = this.storageService.getTasks();
+    this.filteredTasks = this.tasks;
   }
 
   getPersons(){

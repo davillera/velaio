@@ -3,41 +3,39 @@
 
   <div class="flex flex-column md:flex-row justify-content-center align-items-center gap-2 w-full px-2 max-w-30rem mx-auto">
     <div class="p-inputgroup w-full">
-      <span class="p-inputgroup-addon p-2">
-        <i class="pi pi-search"></i>
-      </span>
-      <input pInputText placeholder="Ej: Hacer la tarea" class="p-2 w-full" />
+        <span class="p-inputgroup-addon p-2">
+            <i class="pi pi-search"></i>
+        </span>
+      <input pInputText placeholder="Ej: Hacer la tarea" class="p-2 w-full" [(ngModel)]="searchTerm" (input)="filterTasks()" />
     </div>
 
-    <button
-      class="p-button-outlined p-2"
-      pButton
-      type="button"
-      icon="pi pi-filter"
-    ></button>
+    <p-dropdown
+      [options]="filterOptions"
+      [(ngModel)]="selectedFilter"
+      (onChange)="filterTasks()"
+      placeholder="Filtrar por estado"
+      class="w-14rem ml-2"
+    ></p-dropdown>
   </div>
 
+
   <div class="flex flex-column w-full mt-3 mx-2 max-w-30rem">
-    <div *ngIf="tasks.length > 0; else noTasks">
-      <div *ngFor="let task of tasks" class="mb-3">
+    <div *ngIf="filteredTasks.length > 0; else noTasks">
+      <div *ngFor="let task of filteredTasks" class="mb-3">
         <p-card>
           <ng-template pTemplate="header">
             <div class="flex justify-between flex-column p-2">
               <h4>{{ task.name }}</h4>
               <span class="font-bold" [ngClass]="{'text-green-500': task.status, 'text-yellow-500': !task.status}">
-              {{ task.status ? 'Completada' : 'Pendiente' }}
-            </span>
+                        {{ task.status ? 'Completada' : 'Pendiente' }}
+                    </span>
             </div>
           </ng-template>
-
           <p><strong>Fecha límite:</strong> {{ task.date | date: 'dd/MMM/yyyy' }}</p>
-
           <p><strong>Asignado a:</strong></p>
           <p-avatarGroup>
-            <p-avatar *ngFor="let person of task.persons" label="{{ getAvatarInitials(person.name) }}"
-                      shape="circle" styleClass="mr-2"></p-avatar>
+            <p-avatar *ngFor="let person of task.persons" label="{{ getAvatarInitials(person.name) }}" shape="circle" styleClass="mr-2"></p-avatar>
           </p-avatarGroup>
-
           <ng-template pTemplate="body">
             <div class="flex justify-between mt-2">
               <div class="flex justify-end">
@@ -52,24 +50,15 @@
                 ></button>
               </div>
               <div class="flex justify-end ml-2">
-                <button
-                  pButton
-                  icon="pi pi-pencil"
-                  class="p-button-info p-button-sm"
-                  (click)="editTask(task)"
-                ></button>
-                <button
-                  pButton
-                  icon="pi pi-trash"
-                  class="p-button-danger p-button-sm ml-2"
-                  (click)="deleteTask(task)"
-                ></button>
+                <button pButton icon="pi pi-pencil" class="p-button-info p-button-sm" (click)="editTask(task)"></button>
+                <button pButton icon="pi pi-trash" class="p-button-danger p-button-sm ml-2" (click)="deleteTask(task)"></button>
               </div>
             </div>
           </ng-template>
         </p-card>
       </div>
     </div>
+
 
     <ng-template #noTasks>
       <p>No hay tareas disponibles.</p>
