@@ -35,7 +35,13 @@ export class StorageService {
 
   addTask(task: Task){
     let tasks: Task[] = this.getTasks();
-    if(!tasks){
+
+    const taskExists = tasks.some(existingTask => existingTask.name === task.name);
+    if (taskExists) {
+      throw new Error(`La tarea con el nombre "${task.name}" ya existe.`);
+    }
+
+    if (!tasks) {
       tasks = [];
     }
     tasks.push(task);
@@ -48,5 +54,34 @@ export class StorageService {
       return JSON.parse(tasks);
     }
     return []
+  }
+  
+  updateTask(oldTask?: Task, updatedTask?: Task) {
+    if (!oldTask || !updatedTask) {
+      console.error("Se requieren tanto oldTask como updatedTask para actualizar.");
+      return;
+    }
+
+    let tasks: Task[] = this.getTasks();
+    const index = tasks.findIndex(existingTask =>
+      existingTask.name.trim() === oldTask.name.trim()
+    );
+
+
+    if (index !== -1) {
+      tasks[index] = { ...tasks[index], ...updatedTask };
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+    } else {
+      console.log(`Tarea "${oldTask.name}" no encontrada para actualizar.`);
+    }
+  }
+
+  deleteTask(taskName: string) {
+    let tasks = this.getTasks()
+
+    if (tasks.length > 0) {
+      tasks = tasks.filter((task: Task) => task.name !== taskName);
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+    }
   }
 }

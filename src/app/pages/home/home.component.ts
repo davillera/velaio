@@ -7,12 +7,18 @@ import { RadioButtonModule } from 'primeng/radiobutton';
 import {DialogModule} from "primeng/dialog";
 import {CalendarModule} from "primeng/calendar";
 import { SpeedDialModule } from 'primeng/speeddial';
-import {MenuItem} from "primeng/api";
+import {MessageService} from "primeng/api";
 import {MultiSelectModule} from "primeng/multiselect";
 import {ChipsModule} from "primeng/chips";
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
 import {StorageService} from "../../core/services/storage.service";
 import {Person} from "../../core/models/person";
+import {Task} from "../../core/models/task";
+import {CardModule} from "primeng/card";
+import {AvatarGroupModule} from "primeng/avatargroup";
+import {AvatarModule} from "primeng/avatar";
+import {ToastModule} from "primeng/toast";
+
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -27,7 +33,11 @@ import {Person} from "../../core/models/person";
     SpeedDialModule,
     MultiSelectModule,
     ChipsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    CardModule,
+    AvatarGroupModule,
+    AvatarModule,
+    ToastModule
   ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
@@ -36,57 +46,35 @@ export class HomeComponent implements OnInit {
   currentDate: Date = new Date();
   isOpenTaskModal: boolean = false;
   isOpenPersonModal: boolean = false;
+  isEditing: boolean = false;
 
   private formBuilder  = inject(FormBuilder)
   private storageService = inject(StorageService);
+  private messageService =inject(MessageService)
 
   public personForm: FormGroup  = new FormGroup({})
   public taskForm: FormGroup  = new FormGroup({})
 
   persons: Person[] = [];
-
-  menuItems: MenuItem[] = [
-    {
-      tooltipOptions: {
-        tooltipLabel: 'Agregar Tarea'
-      },
-      icon: 'pi pi-pencil',
-      command: () => {
-
-      }
-    },
-
-    {
-      tooltipOptions: {
-        tooltipLabel: 'Agregar Persona'
-      },
-      icon: 'pi pi-pencil',
-      command: () => {
-
-      }
-    },
-    {
-      tooltipOptions: {
-        tooltipLabel: 'Ver Personas'
-      },
-      icon: 'pi pi-pencil',
-      command: () => {
-
-      }
-    },
-
-  ]
-
+  oldTask: any
+  tasks: Task[] = []
 
   ngOnInit(){
     this.getPersons()
+    this.getTasks()
     this.initFormPerson()
     this.initFormTask()
   }
 
+  getAvatarInitials(name: string): string {
+    const names = name.split(' ');
+    const initials = names.map(n => n[0]).join('');
+    return initials.toUpperCase();
+  }
+
   initFormPerson() {
     this.personForm = this.formBuilder.group({
-      name: ['', [Validators.required, Validators.minLength(5)]],
+      name: ['', [Validators.required, Validators.minLength(2)]],
       age: ['', [Validators.required, Validators.min(18), Validators.max(80), Validators.pattern('^[0-9]*$')]],
       skills: [[], [Validators.required]]
     })
@@ -94,11 +82,15 @@ export class HomeComponent implements OnInit {
 
   initFormTask(){
     this.taskForm = this.formBuilder.group({
-      nameTask: ['', [Validators.required]],
+      name: ['', [Validators.required]],
       date: ['', [Validators.required]],
       status: [false, [Validators.required]],
       persons: [[], [Validators.required]]
     })
+  }
+
+  getTasks(){
+    this.tasks = this.storageService.getTasks();
   }
 
   getPersons(){
@@ -106,12 +98,57 @@ export class HomeComponent implements OnInit {
   }
 
   saveTask() {
-    this.storageService.addTask(this.taskForm.value)
+    try {
+      if(this.isEditing){
+        this.storageService.updateTask(this.oldTask, this.taskForm.value)
+      } else{
+        this.storageService.addTask(this.taskForm.value)
+      }
+      this.isOpenTaskModal = false;
+      this.getTasks();
+    } catch (error) {
+      this.messageService.add({ severity: 'error', summary: 'Error', detail: `${error}` });
+    } finally {
+      this.initFormTask()
+    }
   }
+
+
+  editTask(task: Task) {
+    this.isEditing = true;
+    this.taskForm.patchValue({
+      name: task.name,
+      date: task.date,
+      persons: task.persons,
+    });
+    this.oldTask = task;
+    this.isOpenTaskModal = true;
+  }
+
 
   savePerson(){
     this.storageService.addPerson(this.personForm.value)
     this.personForm.reset()
     this.isOpenPersonModal = false
+    this.getPersons()
+  }
+
+  changeStatus(task: Task) {
+    task.status = !task.status;
+    this.storageService.updateTask(task);
+  }
+
+  deleteTask(task: Task) {
+    if (confirm(`¿Estás seguro de que quieres eliminar la tarea "${task.name}"?`)) {
+      this.storageService.deleteTask(task.name);
+      this.getTasks();
+    }
+  }
+
+  openTaskModal() {
+    this.initFormTask()
+    this.isOpenTaskModal = true
+    this.isEditing = false
+
   }
 }
