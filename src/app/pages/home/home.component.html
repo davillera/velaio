@@ -1,3 +1,5 @@
+<p-confirmDialog></p-confirmDialog>
+
 <div class="flex flex-column align-items-center">
   <h1 class="text-center">Mis Tareas</h1>
 
@@ -157,12 +159,15 @@
           class="w-full p-2 mt-1"
           placeholder="Ej: Iván" />
         <div *ngIf="personForm.get('name')?.invalid && (personForm.get('name')?.dirty || personForm.get('name')?.touched)">
-          <small
-            class="text-red-500"
-            *ngIf="personForm.get('name')?.errors?.['required']">
-            El nombre es obligatorio</small>
+          <small class="text-red-500" *ngIf="personForm.get('name')?.errors?.['required']">
+            El nombre es obligatorio
+          </small>
+          <small class="text-red-500" *ngIf="personForm.get('name')?.errors?.['minlength']">
+            El nombre debe tener al menos 5 caracteres
+          </small>
         </div>
       </div>
+
 
       <div class="mt-4">
         <label>Edad:</label>
@@ -173,15 +178,17 @@
           class="w-full p-2 mt-1"
           placeholder="Ej: 24" />
         <div *ngIf="personForm.get('age')?.invalid && (personForm.get('age')?.dirty || personForm.get('age')?.touched)">
-          <small
-            class="text-red-500"
-            *ngIf="personForm.get('age')?.errors?.['required']">
+          <small class="text-red-500" *ngIf="personForm.get('age')?.errors?.['required']">
             La edad es obligatoria
           </small>
-          <small
-            class="text-red-500"
-            *ngIf="personForm.get('age')?.errors?.['pattern']">
-            La edad debe ser un número
+          <small class="text-red-500" *ngIf="personForm.get('age')?.errors?.['min']">
+            La edad debe ser al menos 18 años.
+          </small>
+          <small class="text-red-500" *ngIf="personForm.get('age')?.errors?.['max']">
+            La edad no puede ser mayor a 90 años.
+          </small>
+          <small class="text-red-500" *ngIf="personForm.get('age')?.errors?.['pattern']">
+            La edad debe ser un número válido.
           </small>
         </div>
       </div>

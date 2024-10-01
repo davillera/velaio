@@ -7,7 +7,7 @@ import { RadioButtonModule } from 'primeng/radiobutton';
 import {DialogModule} from "primeng/dialog";
 import {CalendarModule} from "primeng/calendar";
 import { SpeedDialModule } from 'primeng/speeddial';
-import {MessageService} from "primeng/api";
+import {ConfirmationService, MessageService} from "primeng/api";
 import {MultiSelectModule} from "primeng/multiselect";
 import {ChipsModule} from "primeng/chips";
 import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from "@angular/forms";
@@ -19,6 +19,7 @@ import {AvatarGroupModule} from "primeng/avatargroup";
 import {AvatarModule} from "primeng/avatar";
 import {ToastModule} from "primeng/toast";
 import {DropdownModule} from "primeng/dropdown";
+import {ConfirmDialogModule} from "primeng/confirmdialog";
 
 @Component({
   selector: 'app-home',
@@ -40,7 +41,8 @@ import {DropdownModule} from "primeng/dropdown";
     AvatarModule,
     ToastModule,
     FormsModule,
-    DropdownModule
+    DropdownModule,
+    ConfirmDialogModule
   ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
@@ -53,7 +55,8 @@ export class HomeComponent implements OnInit {
 
   private formBuilder  = inject(FormBuilder)
   private storageService = inject(StorageService);
-  private messageService =inject(MessageService)
+  private messageService = inject(MessageService)
+  private confirmationService  = inject(ConfirmationService)
 
   public personForm: FormGroup  = new FormGroup({})
   public taskForm: FormGroup  = new FormGroup({})
@@ -76,6 +79,11 @@ export class HomeComponent implements OnInit {
     this.initFormPerson()
     this.initFormTask()
     this.filteredTasks = this.tasks;
+  }
+
+  get ageWarning() {
+    const age = this.personForm.get('age')?.value;
+    return age < 18 && this.personForm.get('age')?.touched;
   }
 
   filterTasks() {
@@ -105,8 +113,8 @@ export class HomeComponent implements OnInit {
 
   initFormPerson() {
     this.personForm = this.formBuilder.group({
-      name: ['', [Validators.required, Validators.minLength(2)]],
-      age: ['', [Validators.required, Validators.min(18), Validators.max(80), Validators.pattern('^[0-9]*$')]],
+      name: ['', [Validators.required, Validators.minLength(5)]],
+      age: ['', [Validators.required, Validators.min(18), Validators.max(90), Validators.pattern('^[0-9]*$')]],
       skills: [[], [Validators.required]]
     })
   }
@@ -170,16 +178,24 @@ export class HomeComponent implements OnInit {
   }
 
   deleteTask(task: Task) {
-    if (confirm(`¿Estás seguro de que quieres eliminar la tarea "${task.name}"?`)) {
-      this.storageService.deleteTask(task.name);
-      this.getTasks();
-    }
+    this.confirmationService.confirm({
+      message: `¿Estás seguro de que quieres eliminar la tarea "${task.name}"?`,
+      header: 'Confirmación',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        this.storageService.deleteTask(task.name);
+        this.getTasks();
+      },
+      reject: () => {
+      },
+      acceptLabel: 'Sí',
+      rejectLabel: 'No'
+    })
   }
 
   openTaskModal() {
     this.initFormTask()
     this.isOpenTaskModal = true
     this.isEditing = false
-
   }
 }
