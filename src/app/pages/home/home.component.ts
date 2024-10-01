@@ -79,19 +79,23 @@ export class HomeComponent implements OnInit {
   }
 
   filterTasks() {
-    const search = this.searchTerm.trim().toLowerCase();
-
+    const search = this.removeAccents(this.searchTerm.trim().toLowerCase());
     this.filteredTasks = this.tasks.filter(task =>
-      task.name.toLowerCase().includes(search) ||
-      task.persons.some(person => person.name.toLowerCase().includes(search))
+      this.removeAccents(task.name.toLowerCase()).includes(search) ||
+      task.persons.some(person => this.removeAccents(person.name.toLowerCase()).includes(search))
     );
-    
+
     if (this.selectedFilter === 'completed') {
-      this.filteredTasks = this.filteredTasks.filter(task => task.status === true);
+      this.filteredTasks = this.filteredTasks.filter(task => task.status);
     } else if (this.selectedFilter === 'pending') {
-      this.filteredTasks = this.filteredTasks.filter(task => task.status === false);
+      this.filteredTasks = this.filteredTasks.filter(task => !task.status);
     }
   }
+
+  removeAccents(text: string): string {
+    return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  }
+
 
   getAvatarInitials(name: string): string {
     const names = name.split(' ');
@@ -141,7 +145,6 @@ export class HomeComponent implements OnInit {
     }
   }
 
-
   editTask(task: Task) {
     this.isEditing = true;
     this.taskForm.patchValue({
@@ -153,7 +156,6 @@ export class HomeComponent implements OnInit {
     this.isOpenTaskModal = true;
   }
 
-
   savePerson(){
     this.storageService.addPerson(this.personForm.value)
     this.personForm.reset()
@@ -162,8 +164,9 @@ export class HomeComponent implements OnInit {
   }
 
   changeStatus(task: Task) {
-    task.status = !task.status;
-    this.storageService.updateTask(task);
+    const updatedTask = { ...task, status: !task.status };
+    this.storageService.updateTask(task, updatedTask);
+    this.getTasks();
   }
 
   deleteTask(task: Task) {
