@@ -35,12 +35,13 @@ import {Person} from "../../core/models/person";
 export class HomeComponent implements OnInit {
   currentDate: Date = new Date();
   isOpenTaskModal: boolean = false;
-  isOpenPersonModal: boolean = true;
+  isOpenPersonModal: boolean = false;
 
   private formBuilder  = inject(FormBuilder)
   private storageService = inject(StorageService);
 
   public personForm: FormGroup  = new FormGroup({})
+  public taskForm: FormGroup  = new FormGroup({})
 
   persons: Person[] = [];
 
@@ -80,13 +81,23 @@ export class HomeComponent implements OnInit {
   ngOnInit(){
     this.getPersons()
     this.initFormPerson()
+    this.initFormTask()
   }
 
   initFormPerson() {
     this.personForm = this.formBuilder.group({
-      name: ['', [Validators.required]],
+      name: ['', [Validators.required, Validators.minLength(5)]],
       age: ['', [Validators.required, Validators.min(18), Validators.max(80), Validators.pattern('^[0-9]*$')]],
       skills: [[], [Validators.required]]
+    })
+  }
+
+  initFormTask(){
+    this.taskForm = this.formBuilder.group({
+      nameTask: ['', [Validators.required]],
+      date: ['', [Validators.required]],
+      status: [false, [Validators.required]],
+      persons: [[], [Validators.required]]
     })
   }
 
@@ -95,7 +106,7 @@ export class HomeComponent implements OnInit {
   }
 
   saveTask() {
-
+    this.storageService.addTask(this.taskForm.value)
   }
 
   savePerson(){

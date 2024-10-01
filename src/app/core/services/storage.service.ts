@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import {Person} from "../models/person";
+import {Task} from "../models/task";
 
 @Injectable({
   providedIn: 'root'
@@ -30,5 +31,22 @@ export class StorageService {
       persons = persons.filter(person => person.name !== personName);
       localStorage.setItem('persons', JSON.stringify(persons));
     }
+  }
+
+  addTask(task: Task){
+    let tasks: Task[] = this.getTasks();
+    if(!tasks){
+      tasks = [];
+    }
+    tasks.push(task);
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+  }
+
+  getTasks() {
+    const tasks = localStorage.getItem('tasks');
+    if (tasks) {
+      return JSON.parse(tasks);
+    }
+    return []
   }
 }
